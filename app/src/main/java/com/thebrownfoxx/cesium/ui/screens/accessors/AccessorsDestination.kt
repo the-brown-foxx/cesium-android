@@ -5,12 +5,12 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
-import com.thebrownfoxx.cesium.data.api.totp.KtorAccessorService
+import com.thebrownfoxx.cesium.application
 
 @Destination
 @Composable
 fun Accessors() {
-    val viewModel = viewModel { AccessorsViewModel(KtorAccessorService()) }
+    val viewModel = viewModel { AccessorsViewModel(application.accessorService) }
 
     with(viewModel) {
         val searchQuery by searchQuery.collectAsStateWithLifecycle()

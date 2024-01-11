@@ -3,10 +3,10 @@ package com.thebrownfoxx.cesium.data.api.totp
 import com.thebrownfoxx.cesium.data.api.ApiResponse
 import com.thebrownfoxx.models.totp.SavedAccessor
 import com.thebrownfoxx.models.totp.UnsavedAccessor
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface AccessorService {
-    fun getAll(): Flow<ApiResponse<List<SavedAccessor>>>
+    fun getAll(): StateFlow<ApiResponse<List<SavedAccessor>>?>
     suspend fun get(id: Int): ApiResponse<SavedAccessor?>
     suspend fun add(accessor: UnsavedAccessor): ApiResponse<SavedAccessor>
     suspend fun updateName(id: Int, name: String): ApiResponse<String>

@@ -1,66 +1,122 @@
 package com.thebrownfoxx.cesium.data.api.totp
 
-import com.thebrownfoxx.cesium.data.api.HttpRoutes
-import com.thebrownfoxx.cesium.data.api.newHttpClient
+import android.app.Application
 import com.thebrownfoxx.cesium.data.api.ApiResponse
+import com.thebrownfoxx.cesium.data.api.HttpRoutes
+import com.thebrownfoxx.cesium.data.api.tryApiCall
+import com.thebrownfoxx.cesium.data.datastore.jwt
 import com.thebrownfoxx.models.totp.SavedAccessor
 import com.thebrownfoxx.models.totp.UnsavedAccessor
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
+import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
-import io.ktor.http.HttpStatusCode
-import io.ktor.util.InternalAPI
+import io.ktor.client.request.patch
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // TODO: Remove default client
-class KtorAccessorService(private val client: HttpClient = newHttpClient()): AccessorService {
-        private val accessors = MutableSharedFlow<ApiResponse<List<SavedAccessor>>>()
+class KtorAccessorService(
+    application: Application,
+    private val client: HttpClient,
+    private val routes: HttpRoutes,
+) : AccessorService {
+    private val scope = CoroutineScope(Dispatchers.IO)
 
-        private suspend fun updateAccessors() {
-//            val httpResponse = client.get(HttpRoutes().accessors)
-//            if (httpResponse.status == HttpStatusCode.OK) {
-//                accessors.emit(ApiResponse.Success(httpResponse.body()))
-//            } else {
-//                accessors.emit(ApiResponse.Error(httpResponse.status.description))
-//            }
-        }
+    private val jwt = application.jwt.stateIn(scope, SharingStarted.Eagerly, null)
+    private val accessors = MutableStateFlow<ApiResponse<List<SavedAccessor>>?>(null)
+    override fun getAll(): StateFlow<ApiResponse<List<SavedAccessor>>?> {
+        return accessors.asStateFlow()
+    }
 
-        override fun getAll(): Flow<ApiResponse<List<SavedAccessor>>> {
-            return accessors
-                .asSharedFlow()
-                .also { CoroutineScope(Dispatchers.IO).launch { updateAccessors() } }
-        }
-
-        override suspend fun get(id: Int): ApiResponse<SavedAccessor?> {
-            TODO("Not yet implemented")
-        }
-
-        @OptIn(InternalAPI::class)
-        override suspend fun add(accessor: UnsavedAccessor): ApiResponse<SavedAccessor> {
-            TODO()
-//            return client.post(HttpRoutes.accessors) {
-//                contentType(ContentType.Application.Json)
-//                body = accessor
-//            }.body<SavedAccessor>()
-//                .also { updateAccessors() }
-        }
-
-        override suspend fun updateName(id: Int, name: String): ApiResponse<String> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun refreshTotpSecret(id: Int): ApiResponse<String> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun delete(id: Int): ApiResponse<String> {
-            TODO()
-//            return (client.delete(HttpRoutes.deleteAccessor(id)).status == HttpStatusCode.OK)
-//                .also { updateAccessors() }
+    private suspend fun refreshAccessors() {
+        accessors.value = withContext(Dispatchers.IO) {
+            tryApiCall<List<SavedAccessor>> {
+                routes.accessors?.let { path ->
+                    client.get(path) {
+                        bearerAuth(jwt.value?.value.orEmpty())
+                    }
+                }
+            }
         }
     }
+
+    init {
+        scope.launch {
+            routes.baseUrl.collect {
+                refreshAccessors()
+            }
+        }
+    }
+
+    override suspend fun get(id: Int): ApiResponse<SavedAccessor?> {
+        return withContext(Dispatchers.IO) {
+            tryApiCall<SavedAccessor?> {
+                routes.getAccessor(id)?.let { path ->
+                    client.get(path) {
+                        bearerAuth(jwt.value?.value.orEmpty())
+                    }
+                }
+            }
+        }
+    }
+
+    override suspend fun add(accessor: UnsavedAccessor): ApiResponse<SavedAccessor> {
+        return withContext(Dispatchers.IO) {
+            tryApiCall<SavedAccessor> {
+                routes.addAccessor?.let { path ->
+                    client.post(path) {
+                        bearerAuth(jwt.value?.value.orEmpty())
+                        setBody(accessor)
+                    }
+                }
+            }
+        }
+    }
+
+    override suspend fun updateName(id: Int, name: String): ApiResponse<String> {
+        return withContext(Dispatchers.IO) {
+            tryApiCall<String> {
+                routes.updateAccessorName(id)?.let { path ->
+                    client.patch(path) {
+                        bearerAuth(jwt.value?.value.orEmpty())
+                        setBody(name)
+                    }
+                }
+            }
+        }
+    }
+
+    override suspend fun refreshTotpSecret(id: Int): ApiResponse<String> {
+        return withContext(Dispatchers.IO) {
+            tryApiCall<String> {
+                routes.refreshAccessorTotpSecret(id)?.let { path ->
+                    client.patch(path) {
+                        bearerAuth(jwt.value?.value.orEmpty())
+                    }
+                }
+            }
+        }
+    }
+
+    override suspend fun delete(id: Int): ApiResponse<String> {
+        return withContext(Dispatchers.IO) {
+            tryApiCall<String> {
+                routes.deleteAccessor(id)?.let { path ->
+                    client.delete(path) {
+                        bearerAuth(jwt.value?.value.orEmpty())
+                    }
+                }
+            }
+        }
+    }
+}

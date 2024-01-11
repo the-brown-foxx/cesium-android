@@ -4,11 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hamthelegend.enchantmentorder.extensions.combineToStateFlow
 import com.hamthelegend.enchantmentorder.extensions.search
-import com.thebrownfoxx.cesium.domain.Accessor
-import com.thebrownfoxx.cesium.data.api.totp.AccessorService
 import com.thebrownfoxx.cesium.data.api.ApiResponse
+import com.thebrownfoxx.cesium.data.api.totp.AccessorService
+import com.thebrownfoxx.cesium.domain.Accessor
 import com.thebrownfoxx.cesium.totp.decrypt
-import com.thebrownfoxx.cesium.totp.toPlainText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -29,7 +28,7 @@ class AccessorsViewModel(private val service: AccessorService): ViewModel() {
                 Accessor(
                     id = exposedAccessor.id,
                     name = exposedAccessor.name,
-                    totpSecret = exposedAccessor.totpSecret.decrypt().toPlainText(),
+                    totpSecret = exposedAccessor.totpSecret.decrypt().value,
                 )
             }.search(searchQuery) { it.name }
         } else null
