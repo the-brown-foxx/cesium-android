@@ -65,7 +65,7 @@ class KtorAccessorService(
                     client.get(path) {
                         bearerAuth(jwt.value?.value.orEmpty())
                     }
-                }
+                }.also { refreshAccessors() }
             }
         }
     }
@@ -78,7 +78,7 @@ class KtorAccessorService(
                         bearerAuth(jwt.value?.value.orEmpty())
                         setBody(accessor)
                     }
-                }
+                }.also { refreshAccessors() }
             }
         }
     }
@@ -91,7 +91,7 @@ class KtorAccessorService(
                         bearerAuth(jwt.value?.value.orEmpty())
                         setBody(name)
                     }
-                }
+                }.also { refreshAccessors() }
             }
         }
     }
@@ -103,7 +103,7 @@ class KtorAccessorService(
                     client.patch(path) {
                         bearerAuth(jwt.value?.value.orEmpty())
                     }
-                }
+                }.also { refreshAccessors() }
             }
         }
     }
@@ -115,7 +115,7 @@ class KtorAccessorService(
                     client.delete(path) {
                         bearerAuth(jwt.value?.value.orEmpty())
                     }
-                }
+                }.also { refreshAccessors() }
             }
         }
     }
