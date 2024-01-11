@@ -10,7 +10,7 @@ suspend inline fun <reified T> tryApiCall(block: () -> HttpResponse?): ApiRespon
             if (this == null) {
                 return ApiResponse.Error("Host address not set")
             }
-            if (status != HttpStatusCode.OK) {
+            if (status != HttpStatusCode.OK && status != HttpStatusCode.Created) {
                 var error = status.description
                 val body = body<String?>()
                 if (!body.isNullOrEmpty()) {

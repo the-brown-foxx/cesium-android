@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -35,7 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.thebrownfoxx.cesium.ui.theme.AppTheme
 import com.thebrownfoxx.components.animation.sharedYAxisEnter
-import com.thebrownfoxx.components.extension.Zero
 import com.thebrownfoxx.components.extension.bringIntoViewOnFocus
 import com.thebrownfoxx.components.extension.indicationlessClickable
 import com.thebrownfoxx.components.extension.plus
@@ -167,6 +165,7 @@ fun SearchableLazyColumnScreen(
     background: @Composable BoxScope.() -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(16.dp),
     contentPadding: PaddingValues = PaddingValues(16.dp),
     content: LazyListScope.() -> Unit,
@@ -181,6 +180,7 @@ fun SearchableLazyColumnScreen(
         background = background,
         floatingActionButton = floatingActionButton,
         bottomBar = bottomBar,
+        snackbarHost = snackbarHost,
         verticalArrangement = verticalArrangement,
         contentPadding = contentPadding,
         content = content,

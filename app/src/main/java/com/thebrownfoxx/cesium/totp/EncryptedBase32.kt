@@ -2,7 +2,7 @@ package com.thebrownfoxx.cesium.totp
 
 import com.thebrownfoxx.models.totp.Base32
 import com.thebrownfoxx.models.totp.EncryptedBase32
-import java.util.*
+import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import kotlin.random.Random

@@ -5,6 +5,7 @@ import com.hamthelegend.enchantmentorder.extensions.toStateFlow
 import com.thebrownfoxx.cesium.data.api.ApiResponse
 import com.thebrownfoxx.cesium.data.api.HttpRoutes
 import com.thebrownfoxx.cesium.data.api.tryApiCall
+import com.thebrownfoxx.cesium.data.datastore.clearJwt
 import com.thebrownfoxx.cesium.data.datastore.jwt
 import com.thebrownfoxx.cesium.data.datastore.setJwt
 import com.thebrownfoxx.models.auth.ChangeCredentials
@@ -20,6 +21,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class KtorAdminService(
@@ -58,6 +60,7 @@ class KtorAdminService(
                 routes.password?.let { path ->
                     client.patch(path) {
                         contentType(ContentType.Application.Json)
+                        bearerAuth(jwt.value?.value.orEmpty())
                         setBody(credentials)
                     }
                 }
@@ -75,6 +78,12 @@ class KtorAdminService(
                     }
                 }
             }
+        }
+    }
+
+    override fun logout() {
+        serviceScope.launch {
+            application.clearJwt()
         }
     }
 }

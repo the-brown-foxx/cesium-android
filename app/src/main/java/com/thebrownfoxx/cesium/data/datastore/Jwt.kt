@@ -19,3 +19,9 @@ suspend fun Context.setJwt(jwt: Jwt) {
         dataStore.edit { it[JWT_KEY] = jwt.value }
     }
 }
+
+suspend fun Context.clearJwt() {
+    withContext(Dispatchers.IO) {
+        dataStore.edit { it.remove(JWT_KEY) }
+    }
+}

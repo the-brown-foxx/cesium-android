@@ -25,7 +25,7 @@ class HttpRoutes(private val application: Application) {
     fun getAccessor(id: Int) = accessorsBaseUrl?.let { "$it/$id" }
     val addAccessor get() = accessorsBaseUrl
     fun updateAccessorName(id: Int) = getAccessor(id)?.let { "$it/$id/name" }
-    fun refreshAccessorTotpSecret(id: Int) = getAccessor(id)?.let { "$it/$id/totpSecret" }
+    fun refreshAccessorTotpSecret(id: Int) = accessorsBaseUrl?.let { "$it/$id/totp-secret" }
     fun deleteAccessor(id: Int) = accessorsBaseUrl?.let { "$it/$id" }
 
     suspend fun setBaseUrl(ipAddress: String, port: Int) {

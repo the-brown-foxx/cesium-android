@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.hamthelegend.enchantmentorder.extensions.combineToStateFlow
 import com.hamthelegend.enchantmentorder.extensions.search
 import com.thebrownfoxx.cesium.data.api.ApiResponse
+import com.thebrownfoxx.cesium.data.api.auth.AdminService
 import com.thebrownfoxx.cesium.data.api.totp.AccessorService
 import com.thebrownfoxx.cesium.domain.Accessor
 import com.thebrownfoxx.cesium.totp.decrypt
@@ -16,7 +17,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class AccessorsViewModel(private val service: AccessorService): ViewModel() {
+class AccessorsViewModel(
+    private val service: AccessorService,
+    private val adminService: AdminService,
+): ViewModel() {
     private val _errors = MutableSharedFlow<String>()
     val errors = _errors.asSharedFlow()
 
@@ -45,24 +49,30 @@ class AccessorsViewModel(private val service: AccessorService): ViewModel() {
         }
     }
 
-    private val _selectedAccessor = MutableStateFlow<Accessor?>(null)
-    val selectedAccessor = _selectedAccessor.asStateFlow()
+//    private val _selectedAccessor = MutableStateFlow<Accessor?>(null)
+//    val selectedAccessor = _selectedAccessor.asStateFlow()
 
     private val _newAccessorName = MutableStateFlow<String?>(null)
     val newAccessorName = _newAccessorName.asStateFlow()
 
-    private val _accessorBeingDeleted = MutableStateFlow<Accessor?>(null)
-    val accessorBeingDeleted = _accessorBeingDeleted.asStateFlow()
+    private val _accessorToRefreshTotpSecret = MutableStateFlow<Accessor?>(null)
+    val accessorToRefreshTotpSecret = _accessorToRefreshTotpSecret.asStateFlow()
+
+    private val _accessorToDelete = MutableStateFlow<Accessor?>(null)
+    val accessorToDelete = _accessorToDelete.asStateFlow()
+
+    private val _moreActionsVisible = MutableStateFlow(false)
+    val moreActionsVisible = _moreActionsVisible.asStateFlow()
 
     fun updateSearchQuery(query: String) {
         _searchQuery.update { query }
     }
 
-    fun selectAccessor(accessor: Accessor) {
-        _selectedAccessor.update { oldAccessor ->
-            if (oldAccessor?.id == accessor.id) null else accessor
-        }
-    }
+//    fun selectAccessor(accessor: Accessor) {
+//        _selectedAccessor.update { oldAccessor ->
+//            if (oldAccessor?.id == accessor.id) null else accessor
+//        }
+//    }
 
     fun initiateAddAccessor() {
         _newAccessorName.value = ""
@@ -89,21 +99,58 @@ class AccessorsViewModel(private val service: AccessorService): ViewModel() {
         }
     }
 
+    fun initiateRefreshTotpSecret(accessor: Accessor) {
+        _accessorToRefreshTotpSecret.value = accessor
+    }
+
+    fun cancelRefreshTotpSecret() {
+        _accessorToRefreshTotpSecret.value = null
+    }
+
+    fun confirmRefreshTotpSecret() {
+        viewModelScope.launch {
+            val accessorToRefreshTotpSecret = _accessorToRefreshTotpSecret.value
+            if (accessorToRefreshTotpSecret != null) {
+                val response = service.refreshTotpSecret(accessorToRefreshTotpSecret.id!!)
+                if (response is ApiResponse.Error) {
+                    _errors.emit(response.message)
+                }
+            }
+            _accessorToRefreshTotpSecret.value = null
+        }
+    }
+
     fun initiateDeleteAccessor(accessor: Accessor) {
-        _accessorBeingDeleted.value = accessor
+        _accessorToDelete.value = accessor
     }
 
     fun cancelDeleteAccessor() {
-        _accessorBeingDeleted.value = null
+        _accessorToDelete.value = null
     }
 
     fun confirmDeleteAccessor() {
         viewModelScope.launch {
-            val accessorBeingDeleted = _accessorBeingDeleted.value
+            val accessorBeingDeleted = _accessorToDelete.value
             if (accessorBeingDeleted != null) {
                 service.delete(accessorBeingDeleted.id!!)
             }
-            _accessorBeingDeleted.value = null
+            _accessorToDelete.value = null
+        }
+    }
+
+    fun toggleMoreActionsVisible() {
+        _moreActionsVisible.update { !it }
+    }
+
+    fun refreshAccessors() {
+        viewModelScope.launch {
+            service.refreshAccessors()
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            adminService.logout()
         }
     }
 }

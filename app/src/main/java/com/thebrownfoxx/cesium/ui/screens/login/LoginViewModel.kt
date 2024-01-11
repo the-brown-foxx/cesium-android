@@ -2,7 +2,6 @@ package com.thebrownfoxx.cesium.ui.screens.login
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thebrownfoxx.cesium.data.api.ApiResponse
 import com.thebrownfoxx.cesium.data.api.auth.AdminService
@@ -13,8 +12,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -48,17 +45,20 @@ class LoginViewModel(
                     val (ipAddress, port) = it.removePrefix("http://").split(':')
                     _ipAddress.value = ipAddress
                     _port.value = port.toIntOrNull()
-                    authenticate()
+                    authenticate(showError = false)
                 }
             }
         }
     }
 
-    private suspend fun authenticate() {
+    suspend fun authenticate(showError: Boolean = true) {
         withContext(Dispatchers.IO) {
             val response = adminService.authenticate()
             if (response is ApiResponse.Error) {
-                _errors.emit(response.message)
+                if (showError) {
+                    _errors.emit(response.message)
+                }
+                _loggedIn.value = false
                 return@withContext
             }
             _loggedIn.value = true
@@ -89,6 +89,7 @@ class LoginViewModel(
     }
 
     fun login() {
+        _loading.value = true
         val ipAddress = ipAddress.value
         val port = port.value
         val password = password.value
@@ -103,6 +104,7 @@ class LoginViewModel(
             adminService.setBaseUrl(ipAddress, port)
             adminService.login(LoginCredentials(password))
             authenticate()
+            _loading.value = false
         }
     }
 }

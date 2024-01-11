@@ -7,12 +7,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.thebrownfoxx.cesium.data.api.ApiResponse
 import com.thebrownfoxx.cesium.application
 import com.thebrownfoxx.cesium.ui.screens.destinations.AccessorsDestination
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.map
 
 @Destination(start = true)
 @Composable
@@ -33,6 +29,7 @@ fun Login(
         val loading by loading.collectAsStateWithLifecycle()
 
         LaunchedEffect(loggedIn) {
+            authenticate(showError = false)
             if (loggedIn) navigator.navigate(AccessorsDestination)
         }
 

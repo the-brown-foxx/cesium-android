@@ -40,12 +40,14 @@ class KtorAccessorService(
         return accessors.asStateFlow()
     }
 
-    private suspend fun refreshAccessors() {
-        accessors.value = withContext(Dispatchers.IO) {
-            tryApiCall<List<SavedAccessor>> {
-                routes.accessors?.let { path ->
-                    client.get(path) {
-                        bearerAuth(jwt.value?.value.orEmpty())
+    override fun refreshAccessors() {
+        scope.launch {
+            accessors.value = withContext(Dispatchers.IO) {
+                tryApiCall<List<SavedAccessor>> {
+                    routes.accessors?.let { path ->
+                        client.get(path) {
+                            bearerAuth(jwt.value?.value.orEmpty())
+                        }
                     }
                 }
             }
@@ -55,6 +57,11 @@ class KtorAccessorService(
     init {
         scope.launch {
             routes.baseUrl.collect {
+                refreshAccessors()
+            }
+        }
+        scope.launch {
+            jwt.collect {
                 refreshAccessors()
             }
         }
@@ -106,7 +113,6 @@ class KtorAccessorService(
                 routes.refreshAccessorTotpSecret(id)?.let { path ->
                     client.patch(path) {
                         bearerAuth(jwt.value?.value.orEmpty())
-                        contentType(ContentType.Application.Json)
                     }
                 }.also { refreshAccessors() }
             }

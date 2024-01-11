@@ -1,11 +1,12 @@
 package com.thebrownfoxx.cesium.ui.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.twotone.ContentCopy
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Surface
@@ -22,23 +23,26 @@ import androidx.compose.ui.tooling.preview.PreviewFontScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.thebrownfoxx.cesium.ui.theme.AppTheme
+import com.thebrownfoxx.components.IconButton
+import com.thebrownfoxx.components.extension.minus
 
 @Composable
 fun CopyField(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
+    actions: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val clipboardManager = LocalClipboardManager.current
 
     Surface(
         shape = shapes.small,
-        onClick = { clipboardManager.setText(AnnotatedString(value)) },
         modifier = modifier,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(PaddingValues(16.dp) - PaddingValues(end = 8.dp)),
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -50,7 +54,14 @@ fun CopyField(
                     fontFamily = FontFamily.Monospace,
                 )
             }
-            Icon(imageVector = Icons.TwoTone.ContentCopy, contentDescription = null)
+            IconButton(
+                imageVector = Icons.TwoTone.ContentCopy,
+                contentDescription = null,
+                onClick = { clipboardManager.setText(AnnotatedString(value)) },
+            )
+            if (actions != null) {
+                actions()
+            }
         }
     }
 }

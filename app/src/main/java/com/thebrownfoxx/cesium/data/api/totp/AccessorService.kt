@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface AccessorService {
     fun getAll(): StateFlow<ApiResponse<List<SavedAccessor>>?>
+    fun refreshAccessors()
     suspend fun get(id: Int): ApiResponse<SavedAccessor?>
     suspend fun add(accessor: AccessorInfo): ApiResponse<SavedAccessor>
     suspend fun updateName(id: Int, name: String): ApiResponse<String>
