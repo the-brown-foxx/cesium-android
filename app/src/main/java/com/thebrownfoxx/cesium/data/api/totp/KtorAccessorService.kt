@@ -5,8 +5,8 @@ import com.thebrownfoxx.cesium.data.api.ApiResponse
 import com.thebrownfoxx.cesium.data.api.HttpRoutes
 import com.thebrownfoxx.cesium.data.api.tryApiCall
 import com.thebrownfoxx.cesium.data.datastore.jwt
+import com.thebrownfoxx.models.totp.AccessorInfo
 import com.thebrownfoxx.models.totp.SavedAccessor
-import com.thebrownfoxx.models.totp.UnsavedAccessor
 import io.ktor.client.HttpClient
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
@@ -14,6 +14,8 @@ import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,12 +72,13 @@ class KtorAccessorService(
         }
     }
 
-    override suspend fun add(accessor: UnsavedAccessor): ApiResponse<SavedAccessor> {
+    override suspend fun add(accessor: AccessorInfo): ApiResponse<SavedAccessor> {
         return withContext(Dispatchers.IO) {
             tryApiCall<SavedAccessor> {
                 routes.addAccessor?.let { path ->
                     client.post(path) {
                         bearerAuth(jwt.value?.value.orEmpty())
+                        contentType(ContentType.Application.Json)
                         setBody(accessor)
                     }
                 }.also { refreshAccessors() }
@@ -89,6 +92,7 @@ class KtorAccessorService(
                 routes.updateAccessorName(id)?.let { path ->
                     client.patch(path) {
                         bearerAuth(jwt.value?.value.orEmpty())
+                        contentType(ContentType.Application.Json)
                         setBody(name)
                     }
                 }.also { refreshAccessors() }
@@ -102,6 +106,7 @@ class KtorAccessorService(
                 routes.refreshAccessorTotpSecret(id)?.let { path ->
                     client.patch(path) {
                         bearerAuth(jwt.value?.value.orEmpty())
+                        contentType(ContentType.Application.Json)
                     }
                 }.also { refreshAccessors() }
             }
@@ -114,6 +119,7 @@ class KtorAccessorService(
                 routes.deleteAccessor(id)?.let { path ->
                     client.delete(path) {
                         bearerAuth(jwt.value?.value.orEmpty())
+                        contentType(ContentType.Application.Json)
                     }
                 }.also { refreshAccessors() }
             }

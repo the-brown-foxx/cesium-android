@@ -1,6 +1,10 @@
 package com.thebrownfoxx.cesium.ui.screens.accessors
 
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.twotone.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -15,6 +19,11 @@ fun AccessorsScreen(
     onSearchQueryChange: (String) -> Unit,
     selectedAccessor: Accessor?,
     onSelectAccessor: (Accessor) -> Unit,
+    newAccessorName: String?,
+    onInitiateAddAccessor: () -> Unit,
+    onNewAccessorNameChange: (String) -> Unit,
+    onCancelAddAccessor: () -> Unit,
+    onConfirmAddAccessor: () -> Unit,
     accessorBeingDeleted: Accessor?,
     onInitiateDeleteAccessor: (Accessor) -> Unit,
     onCancelDeleteAccessor: () -> Unit,
@@ -25,6 +34,11 @@ fun AccessorsScreen(
         title = "Accessors",
         searchQuery = searchQuery,
         onSearchQueryChange = onSearchQueryChange,
+        floatingActionButton = {
+            FloatingActionButton(onClick = onInitiateAddAccessor) {
+                Icon(imageVector = Icons.TwoTone.Add, contentDescription = null)
+            }
+        },
         modifier = modifier,
     ) {
         items(
@@ -38,6 +52,14 @@ fun AccessorsScreen(
                 onDelete = { onInitiateDeleteAccessor(accessor) },
             )
         }
+    }
+    if (newAccessorName != null) {
+        AddAccessorDialog(
+            accessorName = newAccessorName,
+            onAccessorNameChange = onNewAccessorNameChange,
+            onCancel = onCancelAddAccessor,
+            onDelete = onConfirmAddAccessor,
+        )
     }
     if (accessorBeingDeleted != null) {
         DeleteAccessorDialog(
@@ -71,6 +93,11 @@ fun AccessorScreenPreview() {
             onSearchQueryChange = {},
             selectedAccessor = accessors.first(),
             onSelectAccessor = {},
+            newAccessorName = null,
+            onInitiateAddAccessor = {},
+            onNewAccessorNameChange = {},
+            onCancelAddAccessor = {},
+            onConfirmAddAccessor = {},
             accessorBeingDeleted = null,
             onInitiateDeleteAccessor = {},
             onCancelDeleteAccessor = {},

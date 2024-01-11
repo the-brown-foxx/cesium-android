@@ -16,6 +16,7 @@ fun Accessors() {
         val searchQuery by searchQuery.collectAsStateWithLifecycle()
         val accessors by accessors.collectAsStateWithLifecycle()
         val selectedAccessor by selectedAccessor.collectAsStateWithLifecycle()
+        val newAccessorName by newAccessorName.collectAsStateWithLifecycle()
         val accessorBeingDeleted by accessorBeingDeleted.collectAsStateWithLifecycle()
 
         AccessorsScreen(
@@ -24,6 +25,11 @@ fun Accessors() {
             onSearchQueryChange = ::updateSearchQuery,
             selectedAccessor = selectedAccessor,
             onSelectAccessor = ::selectAccessor,
+            newAccessorName = newAccessorName,
+            onInitiateAddAccessor = ::initiateAddAccessor,
+            onNewAccessorNameChange = ::updateNewAccessorName,
+            onCancelAddAccessor = ::cancelAddAccessor,
+            onConfirmAddAccessor = ::confirmAddAccessor,
             accessorBeingDeleted = accessorBeingDeleted,
             onInitiateDeleteAccessor = ::initiateDeleteAccessor,
             onCancelDeleteAccessor = ::cancelDeleteAccessor,

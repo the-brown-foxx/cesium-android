@@ -1,7 +1,6 @@
 package com.thebrownfoxx.cesium.data.api.auth
 
 import android.app.Application
-import com.hamthelegend.enchantmentorder.extensions.mapToStateFlow
 import com.hamthelegend.enchantmentorder.extensions.toStateFlow
 import com.thebrownfoxx.cesium.data.api.ApiResponse
 import com.thebrownfoxx.cesium.data.api.HttpRoutes
@@ -12,8 +11,8 @@ import com.thebrownfoxx.models.auth.ChangeCredentials
 import com.thebrownfoxx.models.auth.Jwt
 import com.thebrownfoxx.models.auth.LoginCredentials
 import io.ktor.client.HttpClient
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -21,7 +20,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
 class KtorAdminService(
@@ -73,7 +71,7 @@ class KtorAdminService(
                 val jwt = jwt.value
                 routes.authenticate?.let { path ->
                     client.get(path) {
-                        header("Authorization", "Bearer ${jwt?.value}")
+                        bearerAuth(jwt?.value.orEmpty())
                     }
                 }
             }
